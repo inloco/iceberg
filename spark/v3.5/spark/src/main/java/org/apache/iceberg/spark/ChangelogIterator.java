@@ -18,6 +18,7 @@
  */
 package org.apache.iceberg.spark;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
@@ -109,7 +110,14 @@ public abstract class ChangelogIterator implements Iterator<Row> {
   }
 
   protected boolean isDifferentValue(Row currentRow, Row nextRow, int idx) {
-    return !Objects.equals(nextRow.get(idx), currentRow.get(idx));
+    Object currentVal = currentRow.get(idx);
+    Object nextVal = nextRow.get(idx);
+
+    if (currentVal instanceof byte[] && nextVal instanceof byte[]) {
+      return !Arrays.equals((byte[]) currentVal, (byte[]) nextVal);
+    }
+
+    return !Objects.equals(currentVal, nextVal);
   }
 
   protected static int[] generateIndicesToIdentifySameRow(
